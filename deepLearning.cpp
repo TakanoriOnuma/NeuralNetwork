@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <iostream>
 #include <vector>
 
@@ -6,6 +8,16 @@ using namespace std;
 double fout(double x)
 {
     return 1 / (1 + exp(-x));
+}
+
+// dec_point_num <= 3‚ª‚¢‚¢B4‚©‚ç­‚µ“®ì‚ª•Ï
+double my_rand(double min, double max, int dec_point_num)
+{
+    double value = 1.0;
+    for(int i = 0; i < dec_point_num; i++){
+        value *= 10.0;
+    }
+    return (double)(rand() % (int)((max - min) * value + 1)) / value + min;
 }
 
 class Neuron {
@@ -32,13 +44,29 @@ public:
             for(int i = 0; i < w.size(); i++) {
                 u += w[i] * in[i];
             }
-            x = fout(u);
+            x = fout(u + bias);
         }
     }
 };
 
+void forwardPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& inp)
+{
+    neurons[0][0]->scalarProduct(inp);
+    for(int i = 1; i < neurons.size(); i++) {
+        vector<double> inp(neurons[i - 1].size());
+        for(int j = 0; j < inp.size(); j++) {
+            inp[j] = neurons[i - 1][j]->getX();
+        }
+        for(int j = 0; j < neurons[i].size(); j++) {
+            neurons[i][j]->scalarProduct(inp);
+        }
+    }
+}
+
 int main()
 {
+    srand((unsigned int)time(NULL));
+
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
     neurons.resize(5);
@@ -54,13 +82,18 @@ int main()
 
     for(int i = 1; i < neurons.size(); i++) {
         w = vector<double>(neurons[i - 1].size());
-        for(int j = 0; j < neurons[i - 1].size(); j++) {
-            w[j] = 1.0;
-        }
         for(int j = 0; j < neurons[i].size(); j++) {
-            neurons[i][j] = new Neuron(w, 0.0);
+            for(int k = 0; k < neurons[i - 1].size(); k++) {
+                w[k] = my_rand(-1, 1, 2);
+            }
+            neurons[i][j] = new Neuron(w, my_rand(-1, 1, 2));
         }
     }
+
+    vector<double> inp(1);
+    inp[0] = my_rand(-1, 1, 2);
+    forwardPropagation(neurons, inp);
+
 
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
@@ -74,7 +107,6 @@ int main()
             cout << endl;
         }
     }
-
 
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
