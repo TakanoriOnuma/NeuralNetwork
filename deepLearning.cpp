@@ -3,6 +3,11 @@
 
 using namespace std;
 
+double fout(double x)
+{
+    return 1 / (1 + exp(-x));
+}
+
 class Neuron {
     double u;
     double x;
@@ -18,20 +23,19 @@ public:
     // --- getter --- //
     double getU() const { return u; }
     double getX() const { return x; }
-    vector<double>& getW() { return w; }
+    const vector<double>& getW() const { return w; }
     double getBias() const { return bias; }
-};
 
-double scalarProduct(const vector<double>& a, const vector<double>& b)
-{
-    double sum = 0.0;
-    if(a.size() == b.size()) {
-        for(int i = 0; i < a.size(); i++) {
-            sum += a[i] * b[i];
+    void scalarProduct(const vector<double>& in) {
+        if(w.size() == in.size()) {
+            u = 0.0;
+            for(int i = 0; i < w.size(); i++) {
+                u += w[i] * in[i];
+            }
+            x = fout(u);
         }
     }
-    return sum;
-}
+};
 
 int main()
 {
@@ -60,7 +64,14 @@ int main()
 
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
-            cout << "neurons[" << i << "][" << j << "]:" << neurons[i][j]->getW().size() << ", " << neurons[i][j]->getBias() << endl;
+            cout << "neurons[" << i << "][" << j << "]:"
+                << neurons[i][j]->getW().size() << ", " << neurons[i][j]->getBias() << ", "
+                << neurons[i][j]->getU() << ", " << neurons[i][j]->getX() << endl;
+      
+            for each(double w in neurons[i][j]->getW()) {
+                cout << w << ", ";
+            }
+            cout << endl;
         }
     }
 
