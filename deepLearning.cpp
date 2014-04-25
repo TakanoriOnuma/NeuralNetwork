@@ -5,9 +5,18 @@
 
 using namespace std;
 
-double fout(double x)
+
+const double Eta   = 0.5;
+const double Alpha = 0.8;
+
+inline double fout(double x)
 {
     return 1 / (1 + exp(-x));
+}
+
+inline double delta_fout(double fout_value)
+{
+    return fout_value * (1.0 - fout_value);
 }
 
 // dec_point_num <= 3がいい。4から少し動作が変
@@ -24,19 +33,33 @@ class Neuron {
     double u;
     double x;
     vector<double> w;
+    vector<double> delta_w;
     double bias;
+    double delta_bias;
 
 public:
     Neuron(const vector<double>& w, double bias)
-        : w(w), bias(bias), u(0.0), x(0.0)
+        : w(w), bias(bias), u(0.0), x(0.0), delta_w(0), delta_bias(0.0)
     {
+        delta_w.resize(w.size());
+        for(int i = 0; i < delta_w.size(); i++) {
+            delta_w[i] = 0.0;
+        }
     }
 
     // --- getter --- //
     double getU() const { return u; }
     double getX() const { return x; }
     const vector<double>& getW() const { return w; }
+    const vector<double>& getDeltaW() const { return delta_w; }
     double getBias() const { return bias; }
+    double getDeltaBias() const { return delta_bias; }
+
+    // --- setter --- //
+    void setW(const vector<double>& w) { this->w = w; }
+    void setDeltaW(const vector<double>& delta_w) { this->delta_w = delta_w; }
+    void setBias(double bias) { this->bias = bias; }
+    void setDeltaBias(double delta_bias) { this->delta_bias = delta_bias; }
 
     void scalarProduct(const vector<double>& in) {
         if(w.size() == in.size()) {
@@ -60,6 +83,80 @@ void forwardPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& 
         for(int j = 0; j < neurons[i].size(); j++) {
             neurons[i][j]->scalarProduct(inp);
         }
+    }
+}
+
+void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsignal)
+{
+
+    vector<Neuron*>& out_neurons = neurons[neurons.size() - 1];     // 出力層ニューロン
+    // 入力信号と教師信号との誤差を求める
+    vector<double> dwo(out_neurons.size());
+    for(int i = 0; i < dwo.size(); i++) {
+        dwo[i] = (tsignal[i] - out_neurons[i]->getX()) * delta_fout(out_neurons[i]->getX());
+    }
+
+
+    // 出力層の結合荷重値を変更する
+    for(int i = 0; i < out_neurons.size(); i++) {
+        vector<double> w       = out_neurons[i]->getW();
+        vector<double> delta_w = out_neurons[i]->getDeltaW();
+        for(int j = 0; j < w.size(); j++) {
+            delta_w[j] = Eta * dwo[i] * neurons[neurons.size() - 2][j]->getX() + Alpha * delta_w[j];
+            w[j] += delta_w[j];
+        }
+        out_neurons[i]->setW(w);
+        out_neurons[i]->setDeltaW(delta_w);
+    }
+
+    // 出力層のしきい値を変更する
+    for(int i = 0; i < out_neurons.size(); i++) {
+        double bias = out_neurons[i]->getBias();
+        double delta_bias = out_neurons[i]->getDeltaBias();
+        delta_bias = Eta * dwo[i] + Alpha * delta_bias;
+        bias += delta_bias;
+        out_neurons[i]->setBias(bias);
+        out_neurons[i]->setDeltaBias(delta_bias);
+    }
+
+    // 中間層の結合荷重値としきい値を変更する
+    vector<double> up_delta  = dwo;
+    for(int i = (int)neurons.size() - 2; i >= 1; i--) {
+        vector<double> now_delta(neurons[i].size());
+
+        // 誤差伝搬で誤差を求める
+        for(int j = 0; j < neurons[i].size(); j++) {
+            double sum = 0.0;
+            
+            for(int k = 0; k < neurons[i + 1].size(); k++) {
+                sum += up_delta[k] * neurons[i + 1][k]->getW()[j];
+            }
+            now_delta[j] = delta_fout(neurons[i][j]->getX()) * sum;
+        }
+
+        // 現在の層の結合荷重値を変更する
+        for(int j = 0; j < neurons[i].size(); j++) {
+            vector<double> w = neurons[i][j]->getW();
+            vector<double> delta_w = neurons[i][j]->getDeltaW();
+            for(int k = 0; k < w.size(); k++) {
+                delta_w[k] = Eta * now_delta[j] + neurons[i - 1][k]->getX() + Alpha * delta_w[k];
+                w[k] += delta_w[k];
+            }
+            neurons[i][j]->setW(w);
+            neurons[i][j]->setDeltaW(delta_w);
+        }
+
+        // 現在の層のしきい値を変更する
+        for(int j = 0; j < neurons[i].size(); j++) {
+            double bias = neurons[i][j]->getBias();
+            double delta_bias = neurons[i][j]->getDeltaBias();
+            delta_bias = Eta * now_delta[j] + Alpha * delta_bias;
+            bias += delta_bias;
+            neurons[i][j]->setBias(bias);
+            neurons[i][j]->setDeltaBias(delta_bias);
+        }
+
+        up_delta = now_delta;
     }
 }
 
@@ -93,6 +190,10 @@ int main()
     vector<double> inp(1);
     inp[0] = my_rand(-1, 1, 2);
     forwardPropagation(neurons, inp);
+
+    vector<double> tsignal(1);
+    tsignal[0] = my_rand(0, 1, 2);
+    backPropagation(neurons, tsignal);
 
 
     for(int i = 0; i < neurons.size(); i++) {
