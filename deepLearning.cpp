@@ -166,6 +166,7 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
+    // ニューロンを5層で1-5-3-5-1にする
     neurons.resize(5);
     neurons[0].resize(1);
     neurons[1].resize(5);
@@ -177,6 +178,7 @@ int main()
     w[0] = 1.0;
     neurons[0][0] = new Neuron(w, 0.0);
 
+    // ニューラルネットワークを構築する
     for(int i = 1; i < neurons.size(); i++) {
         w = vector<double>(neurons[i - 1].size());
         for(int j = 0; j < neurons[i].size(); j++) {
@@ -195,7 +197,7 @@ int main()
     tsignal[0] = my_rand(0, 1, 2);
     backPropagation(neurons, tsignal);
 
-
+    // ニューロンデータの出力
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
             cout << "neurons[" << i << "][" << j << "]:"
@@ -209,6 +211,7 @@ int main()
         }
     }
 
+    // ニューロンの削除（動的に確保したため）
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
             delete neurons[i][j];
