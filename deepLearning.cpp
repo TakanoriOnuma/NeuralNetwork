@@ -6,8 +6,11 @@
 using namespace std;
 
 
-const double Eta   = 0.5;
-const double Alpha = 0.8;
+const double Eta    = 0.5;
+const double Alpha  = 0.8;
+const double PAI    = 3.14159265359;
+const double A      = 1.0;
+const double Lambda = PAI;
 
 inline double fout(double x)
 {
@@ -189,13 +192,21 @@ int main()
         }
     }
 
-    vector<double> inp(1);
-    inp[0] = my_rand(-1, 1, 2);
-    forwardPropagation(neurons, inp);
+    // 教師データの作成
+    const int Patterns = 200;
+    vector<double> inp_dats[Patterns];
+    vector<double> tsignal[Patterns];
 
-    vector<double> tsignal(1);
-    tsignal[0] = my_rand(0, 1, 2);
-    backPropagation(neurons, tsignal);
+    for(int i = 0; i < Patterns; i++) {
+        for(int j = 0; j < neurons[0].size(); j++) {
+            inp_dats[i].push_back(my_rand(-1, 1, 2));
+        }
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            tsignal[i].push_back((A * sin(Lambda * inp_dats[i][j]) + A) / (2 * A));
+        }
+    }
+
+    
 
     // ニューロンデータの出力
     for(int i = 0; i < neurons.size(); i++) {
