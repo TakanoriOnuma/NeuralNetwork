@@ -170,13 +170,11 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを5層で1-5-3-5-1にする
-    neurons.resize(5);
+    // ニューロンを3層で1-2-1にする
+    neurons.resize(3);
     neurons[0].resize(1);
-    neurons[1].resize(5);
-    neurons[2].resize(3);
-    neurons[3].resize(5);
-    neurons[4].resize(1);
+    neurons[1].resize(2);
+    neurons[2].resize(1);
 
     vector<double> w(1);
     w[0] = 1.0;
@@ -209,7 +207,7 @@ int main()
 
     // 学習をする
     double vError = ErrorEv + 1.0;
-    for(int i = 0; vError > ErrorEv && i < 100; i++) {
+    for(int i = 0; vError > ErrorEv && i < 1; i++) {
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
