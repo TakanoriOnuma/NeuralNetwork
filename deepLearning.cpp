@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -74,11 +75,16 @@ public:
             x = fout(u + bias);
         }
     }
+
+    // 入力層の入力信号はそのまま入れる
+    void setX(double x) { this->x = x; }
 };
 
 void forwardPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& inp)
 {
-    neurons[0][0]->scalarProduct(inp);
+    for(int i = 0; i < neurons[0].size(); i++) {
+        neurons[0][i]->setX(inp[i]);
+    }
     for(int i = 1; i < neurons.size(); i++) {
         vector<double> inp(neurons[i - 1].size());
         for(int j = 0; j < inp.size(); j++) {
@@ -185,7 +191,7 @@ int main()
         w = vector<double>(neurons[i - 1].size());
         for(int j = 0; j < neurons[i].size(); j++) {
             for(int k = 0; k < neurons[i - 1].size(); k++) {
-                w[k] = my_rand(-1, 1, 2);
+                w[k] = my_rand(-10, 10, 2);
             }
             neurons[i][j] = new Neuron(w, my_rand(-1, 1, 2));
         }
@@ -207,7 +213,7 @@ int main()
 
     // 学習をする
     double vError = ErrorEv + 1.0;
-    for(int i = 0; vError > ErrorEv && i < 1; i++) {
+    for(int i = 0; vError > ErrorEv && i < 10; i++) {
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
@@ -226,6 +232,35 @@ int main()
             }
             cout << endl;
         }
+    }
+
+    // 結果を出力
+    ofstream ofs_sin("out_sin.dat");
+    ofs_sin << "# ";
+    for(int i = 0; i < inp_dats[0].size(); i++) {
+        ofs_sin << "inp_dats[" << i << "]" << "\t";
+    }
+    for(int i = 0; i < tsignal[0].size(); i++) {
+        ofs_sin << "tsignal[" << i << "]" << "\t";
+    }
+    for(int i = 0; i < neurons[neurons.size() - 1].size(); i++) {
+        ofs_sin << "output[" << i << "]" << "\t";
+    }
+    ofs_sin << endl;
+
+    for(int i = 0; i < Patterns; i++) {
+        for(int j = 0; j < inp_dats[i].size(); j++) {
+            ofs_sin << inp_dats[i][j] << "\t";
+        }
+        forwardPropagation(neurons, inp_dats[i]);
+
+        for(int j = 0; j < tsignal[i].size(); j++) {
+            ofs_sin << (2 * A * tsignal[i][j] - A) << "\t";
+        }
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            ofs_sin << (2 * A * neurons[neurons.size() - 1][j]->getX() - A) << "\t";
+        }
+        ofs_sin << endl;
     }
 
     // ニューロンの削除（動的に確保したため）
