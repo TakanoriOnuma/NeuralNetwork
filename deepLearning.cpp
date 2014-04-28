@@ -6,11 +6,12 @@
 using namespace std;
 
 
-const double Eta    = 0.5;
-const double Alpha  = 0.8;
-const double PAI    = 3.14159265359;
-const double A      = 1.0;
-const double Lambda = PAI;
+const double Eta     = 0.5;
+const double Alpha   = 0.8;
+const double PAI     = 3.14159265359;
+const double ErrorEv = 0.08;
+const double A       = 1.0;
+const double Lambda  = PAI;
 
 inline double fout(double x)
 {
@@ -206,7 +207,14 @@ int main()
         }
     }
 
-    
+    // 学習をする
+    double vError = ErrorEv + 1.0;
+    for(int i = 0; vError > ErrorEv && i < 100; i++) {
+        for(int j = 0; j < Patterns; j++) {
+            forwardPropagation(neurons, inp_dats[j]);
+            backPropagation(neurons, tsignal[j]);
+        }
+    }
 
     // ニューロンデータの出力
     for(int i = 0; i < neurons.size(); i++) {
