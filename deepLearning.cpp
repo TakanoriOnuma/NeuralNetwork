@@ -154,7 +154,7 @@ void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsi
             vector<double> w = neurons[i][j]->getW();
             vector<double> delta_w = neurons[i][j]->getDeltaW();
             for(int k = 0; k < w.size(); k++) {
-                delta_w[k] = Eta * now_delta[j] + neurons[i - 1][k]->getX() + Alpha * delta_w[k];
+                delta_w[k] = Eta * now_delta[j] * neurons[i - 1][k]->getX() + Alpha * delta_w[k];
                 w[k] += delta_w[k];
             }
             neurons[i][j]->setW(w);
