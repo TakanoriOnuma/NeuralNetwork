@@ -2,12 +2,17 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
 
-const double Eta   = 0.5;
-const double Alpha = 0.8;
+const double Eta     = 0.5;
+const double Alpha   = 0.8;
+const double PAI     = 3.14159265359;
+const double ErrorEv = 0.08;
+const double A       = 1.0;
+const double Lambda  = PAI;
 
 inline double fout(double x)
 {
@@ -70,11 +75,16 @@ public:
             x = fout(u + bias);
         }
     }
+
+    // 入力層の入力信号はそのまま入れる
+    void setX(double x) { this->x = x; }
 };
 
 void forwardPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& inp)
 {
-    neurons[0][0]->scalarProduct(inp);
+    for(int i = 0; i < neurons[0].size(); i++) {
+        neurons[0][i]->setX(inp[i]);
+    }
     for(int i = 1; i < neurons.size(); i++) {
         vector<double> inp(neurons[i - 1].size());
         for(int j = 0; j < inp.size(); j++) {
@@ -139,7 +149,7 @@ void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsi
             vector<double> w = neurons[i][j]->getW();
             vector<double> delta_w = neurons[i][j]->getDeltaW();
             for(int k = 0; k < w.size(); k++) {
-                delta_w[k] = Eta * now_delta[j] + neurons[i - 1][k]->getX() + Alpha * delta_w[k];
+                delta_w[k] = Eta * now_delta[j] * neurons[i - 1][k]->getX() + Alpha * delta_w[k];
                 w[k] += delta_w[k];
             }
             neurons[i][j]->setW(w);
@@ -166,36 +176,48 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを5層で1-5-3-5-1にする
-    neurons.resize(5);
+    // ニューロンを3層で1-2-1にする
+    neurons.resize(3);
     neurons[0].resize(1);
-    neurons[1].resize(5);
-    neurons[2].resize(3);
-    neurons[3].resize(5);
-    neurons[4].resize(1);
+    neurons[1].resize(2);
+    neurons[2].resize(1);
 
     vector<double> w(1);
     w[0] = 1.0;
     neurons[0][0] = new Neuron(w, 0.0);
-
     // ニューラルネットワークを構築する
     for(int i = 1; i < neurons.size(); i++) {
         w = vector<double>(neurons[i - 1].size());
         for(int j = 0; j < neurons[i].size(); j++) {
             for(int k = 0; k < neurons[i - 1].size(); k++) {
-                w[k] = my_rand(-1, 1, 2);
+                w[k] = my_rand(-10, 10, 2);
             }
             neurons[i][j] = new Neuron(w, my_rand(-1, 1, 2));
         }
     }
 
-    vector<double> inp(1);
-    inp[0] = my_rand(-1, 1, 2);
-    forwardPropagation(neurons, inp);
+    // 教師データの作成
+    const int Patterns = 200;
+    vector<double> inp_dats[Patterns];
+    vector<double> tsignal[Patterns];
 
-    vector<double> tsignal(1);
-    tsignal[0] = my_rand(0, 1, 2);
-    backPropagation(neurons, tsignal);
+    for(int i = 0; i < Patterns; i++) {
+        for(int j = 0; j < neurons[0].size(); j++) {
+            inp_dats[i].push_back(my_rand(-1, 1, 2));
+        }
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            tsignal[i].push_back((A * sin(Lambda * inp_dats[i][j]) + A) / (2 * A));
+        }
+    }
+    
+    // 学習をする
+    double vError = ErrorEv + 1.0;
+    for(int i = 0; vError > ErrorEv && i < 1000; i++) {
+        for(int j = 0; j < Patterns; j++) {
+            forwardPropagation(neurons, inp_dats[j]);
+            backPropagation(neurons, tsignal[j]);
+        }
+    }
 
     // ニューロンデータの出力
     for(int i = 0; i < neurons.size(); i++) {
@@ -208,7 +230,40 @@ int main()
                 cout << w << ", ";
             }
             cout << endl;
+            for each(double delta_w in neurons[i][j]->getDeltaW()) {
+                cout << delta_w << ", ";
+            }
+            cout << endl;
         }
+    }
+
+    // 結果を出力
+    ofstream ofs_sin("out_sin.dat");
+    ofs_sin << "# ";
+    for(int i = 0; i < inp_dats[0].size(); i++) {
+        ofs_sin << "inp_dats[" << i << "]" << "\t";
+    }
+    for(int i = 0; i < tsignal[0].size(); i++) {
+        ofs_sin << "tsignal[" << i << "]" << "\t";
+    }
+    for(int i = 0; i < neurons[neurons.size() - 1].size(); i++) {
+        ofs_sin << "output[" << i << "]" << "\t";
+    }
+    ofs_sin << endl;
+
+    for(int i = 0; i < Patterns; i++) {
+        for(int j = 0; j < inp_dats[i].size(); j++) {
+            ofs_sin << inp_dats[i][j] << "\t";
+        }
+        forwardPropagation(neurons, inp_dats[i]);
+
+        for(int j = 0; j < tsignal[i].size(); j++) {
+            ofs_sin << (2 * A * tsignal[i][j] - A) << "\t";
+        }
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            ofs_sin << (2 * A * neurons[neurons.size() - 1][j]->getX() - A) << "\t";
+        }
+        ofs_sin << endl;
     }
 
     // ニューロンの削除（動的に確保したため）
