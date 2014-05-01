@@ -170,6 +170,24 @@ void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsi
     }
 }
 
+double calcError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats[], const vector<double> tsignal[], const int patterns)
+{
+    double error = 0.0;
+    const vector<Neuron*>& out_neurons = neurons[neurons.size() - 1];
+
+    // 一連の学習データを繰り返して、誤差を集計する
+    for(int i = 0; i < patterns; i++) {
+        forwardPropagation(neurons, inp_dats[i]);
+
+        for(int j = 0; j < out_neurons.size(); j++) {
+            error += pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0);
+        }
+    }
+    error *= 0.5;
+
+    return error;
+}
+
 int main()
 {
     srand((unsigned int)time(NULL));
@@ -211,12 +229,13 @@ int main()
     }
     
     // 学習をする
-    double vError = ErrorEv + 1.0;
+    double vError = calcError(neurons, inp_dats, tsignal, Patterns);
     for(int i = 0; vError > ErrorEv && i < 1000; i++) {
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
         }
+        vError = calcError(neurons, inp_dats, tsignal, Patterns);
     }
 
     // ニューロンデータの出力
