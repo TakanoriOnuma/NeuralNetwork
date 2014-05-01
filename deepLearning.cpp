@@ -143,11 +143,6 @@ void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsi
             }
             now_delta[j] = delta_fout(neurons[i][j]->getX()) * sum;
         }
-        cout << "now_delta:";
-        for(int j = 0; j < neurons[i].size(); j++) {
-            cout << now_delta[j] << ", ";
-        }
-        cout << endl;
 
         // 現在の層の結合荷重値を変更する
         for(int j = 0; j < neurons[i].size(); j++) {
@@ -190,18 +185,6 @@ int main()
     vector<double> w(1);
     w[0] = 1.0;
     neurons[0][0] = new Neuron(w, 0.0);
-
-    w = vector<double>(1);
-    w[0] = 0.5;
-    neurons[1][0] = new Neuron(w, 0.0);
-    w[0] = 0.7;
-    neurons[1][1] = new Neuron(w, 0.0);
-    w = vector<double>(2);
-    w[0] = 0.1;
-    w[1] = 0.3;
-    neurons[2][0] = new Neuron(w, 0.0);
-
-    /*
     // ニューラルネットワークを構築する
     for(int i = 1; i < neurons.size(); i++) {
         w = vector<double>(neurons[i - 1].size());
@@ -212,8 +195,6 @@ int main()
             neurons[i][j] = new Neuron(w, my_rand(-1, 1, 2));
         }
     }
-    */
-
 
     // 教師データの作成
     const int Patterns = 200;
@@ -231,19 +212,12 @@ int main()
     
     // 学習をする
     double vError = ErrorEv + 1.0;
-    for(int i = 0; vError > ErrorEv && i < 0; i++) {
+    for(int i = 0; vError > ErrorEv && i < 1000; i++) {
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
         }
     }
-
-
-    inp_dats[0][0] = 0.3;
-    tsignal[0][0]  = 0.0164;
-    forwardPropagation(neurons, inp_dats[0]);
-    backPropagation(neurons, tsignal[0]);
-
 
     // ニューロンデータの出力
     for(int i = 0; i < neurons.size(); i++) {
