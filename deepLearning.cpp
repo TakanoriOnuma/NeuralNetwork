@@ -228,9 +228,12 @@ int main()
         }
     }
     
+    ofstream ofs_err("error.dat");
+    ofs_err << "# " << "step\t" << "error" << endl;
     // ŠwK‚ð‚·‚é
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
     for(int i = 0; vError > ErrorEv && i < 1000; i++) {
+        ofs_err << i << "\t" << vError << endl;
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
