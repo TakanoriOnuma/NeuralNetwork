@@ -230,10 +230,33 @@ int main()
     
     ofstream ofs_err("error.dat");
     ofs_err << "# " << "step\t" << "error" << endl;
+    ofstream ofs_w("out_w.dat");
+    ofs_w << "# " << "step\t";
+    for(int i = 1; i < neurons.size(); i++) {
+        for(int j = 0; j < neurons[i].size(); j++) {
+            const vector<double>& w = neurons[i][j]->getW();
+            for(int k = 0; k < w.size(); k++) {
+                ofs_w << "neurons[" << i << "][" << j << "]->w[" << k << "]\t";
+            }
+        }
+    }
+    ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
     for(int i = 0; vError > ErrorEv && i < 1000; i++) {
+        // ファイルに出力
         ofs_err << i << "\t" << vError << endl;
+        ofs_w << i << "\t";
+        for(int ii = 1; ii < neurons.size(); ii++) {
+            for(int j = 0; j < neurons[ii].size(); j++) {
+                const vector<double>& w = neurons[ii][j]->getW();
+                for(int k = 0; k < w.size(); k++) {
+                    ofs_w << w[k] << "\t";
+                }
+            }
+        }
+        ofs_w << endl;
+
         for(int j = 0; j < Patterns; j++) {
             forwardPropagation(neurons, inp_dats[j]);
             backPropagation(neurons, tsignal[j]);
