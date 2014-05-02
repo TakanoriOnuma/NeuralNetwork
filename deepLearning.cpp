@@ -213,15 +213,18 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを3層で1-2-1にする
+    const int N = 10;
+    // ニューロンを3層でN+1-3-N+1にする
     neurons.resize(3);
-    neurons[0].resize(1);
-    neurons[1].resize(2);
-    neurons[2].resize(1);
+    neurons[0].resize(N + 1);
+    neurons[1].resize(3);
+    neurons[2].resize(N + 1);
 
     vector<double> w(1);
     w[0] = 1.0;
-    neurons[0][0] = new Neuron(w, 0.0);
+    for(int i = 0; i < N + 1; i++) {
+        neurons[0][i] = new Neuron(w, 0.0);
+    }
     // ニューラルネットワークを構築する
     for(int i = 1; i < neurons.size(); i++) {
         w = vector<double>(neurons[i - 1].size());
@@ -237,13 +240,13 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 200;
+    const int Patterns = 10;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
     for(int i = 0; i < Patterns; i++) {
-        for(int j = 0; j < neurons[0].size(); j++) {
-            inp_dats[i].push_back(my_rand(-1, 1, 2));
+        for(int j = 0; j < N + 1; j++) {
+            inp_dats[i].push_back(2.0 * j / N - 1.0);
         }
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
             tsignal[i].push_back((A * sin(Lambda * inp_dats[i][j]) + A) / (2 * A));
