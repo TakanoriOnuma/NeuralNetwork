@@ -7,10 +7,11 @@
 using namespace std;
 
 
+const int    N       = 10;
 const double Eta     = 0.5;
 const double Alpha   = 0.8;
 const double PAI     = 3.14159265359;
-const double ErrorEv = 0.08;
+const double ErrorEv = 0.03;
 const double Rlow    = -1.0;
 const double Rhigh   = 1.0;
 
@@ -192,6 +193,7 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
 {
     ofstream ofs(filename);
 
+    ofs << "N:"       << N       << endl;
     ofs << "Eta:"     << Eta     << endl;
     ofs << "Alpha:"   << Alpha   << endl;
     ofs << "ErrorEv:" << ErrorEv << endl;
@@ -209,7 +211,6 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    const int N = 10;
     // ニューロンを3層でN+1-3-N+1にする
     neurons.resize(3);
     neurons[0].resize(N + 1);
@@ -236,7 +237,7 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 10;
+    const int Patterns = 30;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
