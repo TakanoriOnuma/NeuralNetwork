@@ -11,6 +11,8 @@ const double Eta     = 0.5;
 const double Alpha   = 0.8;
 const double PAI     = 3.14159265359;
 const double ErrorEv = 0.08;
+const double Rlow    = -1.0;
+const double Rhigh   = 1.0;
 const double A       = 1.0;
 const double Lambda  = PAI;
 
@@ -188,6 +190,23 @@ double calcError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats
     return error;
 }
 
+void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neurons)
+{
+    ofstream ofs(filename);
+
+    ofs << "Eta:"     << Eta     << endl;
+    ofs << "Alpha:"   << Alpha   << endl;
+    ofs << "ErrorEv:" << ErrorEv << endl;
+    ofs << "Rlow:"    << Rlow    << endl;
+    ofs << "Rhigh:"   << Rhigh   << endl;
+    ofs << "A:"       << A       << endl;
+    ofs << "Lambda:"  << Lambda  << endl;
+    ofs << "--- Neuron ŠK‘w:" << neurons.size() << " ---" << endl;
+    for(int i = 0; i < neurons.size(); i++) {
+        ofs << "‘æ" << (i + 1) << "‘w:" << "ƒjƒ…[ƒƒ“" << neurons[i].size() << "ŒÂ" << endl;
+    }
+}
+
 int main()
 {
     srand((unsigned int)time(NULL));
@@ -208,11 +227,14 @@ int main()
         w = vector<double>(neurons[i - 1].size());
         for(int j = 0; j < neurons[i].size(); j++) {
             for(int k = 0; k < neurons[i - 1].size(); k++) {
-                w[k] = my_rand(-10, 10, 2);
+                w[k] = my_rand(Rlow, Rhigh, 2);
             }
-            neurons[i][j] = new Neuron(w, my_rand(-1, 1, 2));
+            neurons[i][j] = new Neuron(w, my_rand(Rlow, Rhigh, 2));
         }
     }
+
+    outNetworkProperty("neuron_property.txt", neurons);
+
 
     // ‹³Žtƒf[ƒ^‚Ìì¬
     const int Patterns = 200;
