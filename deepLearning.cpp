@@ -247,10 +247,10 @@ int main()
         A[i] = my_rand(-1.0, 1.0, 2);
         Lambda[i] = my_rand(0.1, PAI, 2);
         for(int j = 0; j < N + 1; j++) {
-            inp_dats[i].push_back(2.0 * j / N - 1.0);
-        }
-        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            tsignal[i].push_back((A[i] * sin(Lambda[i] * inp_dats[i][j]) + A[i]) / (2 * A[i]));
+            double inp_data = 2.0 * j / N - 1.0;
+            double sin_data = (A[i] * sin(Lambda[i] * inp_data) + A[i]) / (2 * A[i]);
+            inp_dats[i].push_back(sin_data);
+            tsignal[i].push_back(sin_data);
         }
         ofs_tsignal << i << ", A:" << A[i] << ", Lambda:" << Lambda[i] << endl;
     }
