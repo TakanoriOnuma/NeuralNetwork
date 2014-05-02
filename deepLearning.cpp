@@ -13,8 +13,6 @@ const double PAI     = 3.14159265359;
 const double ErrorEv = 0.08;
 const double Rlow    = -1.0;
 const double Rhigh   = 1.0;
-const double A       = 1.0;
-const double Lambda  = PAI;
 
 inline double fout(double x)
 {
@@ -199,8 +197,6 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
     ofs << "ErrorEv:" << ErrorEv << endl;
     ofs << "Rlow:"    << Rlow    << endl;
     ofs << "Rhigh:"   << Rhigh   << endl;
-    ofs << "A:"       << A       << endl;
-    ofs << "Lambda:"  << Lambda  << endl;
     ofs << "--- Neuron ŠK‘w:" << neurons.size() << " ---" << endl;
     for(int i = 0; i < neurons.size(); i++) {
         ofs << "‘æ" << (i + 1) << "‘w:" << "ƒjƒ…[ƒƒ“" << neurons[i].size() << "ŒÂ" << endl;
@@ -244,13 +240,19 @@ int main()
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
+    ofstream ofs_tsignal("tsignal.txt");
+    double A[Patterns];
+    double Lambda[Patterns];
     for(int i = 0; i < Patterns; i++) {
+        A[i] = my_rand(-1.0, 1.0, 2);
+        Lambda[i] = my_rand(0.1, PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             inp_dats[i].push_back(2.0 * j / N - 1.0);
         }
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            tsignal[i].push_back((A * sin(Lambda * inp_dats[i][j]) + A) / (2 * A));
+            tsignal[i].push_back((A[i] * sin(Lambda[i] * inp_dats[i][j]) + A[i]) / (2 * A[i]));
         }
+        ofs_tsignal << i << ", A:" << A[i] << ", Lambda:" << Lambda[i] << endl;
     }
     
     ofstream ofs_err("error.dat");
@@ -328,10 +330,10 @@ int main()
         forwardPropagation(neurons, inp_dats[i]);
 
         for(int j = 0; j < tsignal[i].size(); j++) {
-            ofs_sin << (2 * A * tsignal[i][j] - A) << "\t";
+            ofs_sin << (2 * A[i] * tsignal[i][j] - A[i]) << "\t";
         }
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            ofs_sin << (2 * A * neurons[neurons.size() - 1][j]->getX() - A) << "\t";
+            ofs_sin << (2 * A[i] * neurons[neurons.size() - 1][j]->getX() - A[i]) << "\t";
         }
         ofs_sin << endl;
     }
