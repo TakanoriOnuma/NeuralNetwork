@@ -323,11 +323,28 @@ int main()
     }
     ofs_sin << endl;
 
+    ofstream ofs_x("out_x.dat");
+    ofs_x << "# pattern" << "\t";
+    for(int i = 0; i < neurons.size(); i++) {
+        for(int j = 0; j < neurons[i].size(); j++) {
+            ofs_x << "neuron[" << i << "][" << j << "]" << "\t";
+        }
+    }
+    ofs_x << endl;
     for(int i = 0; i < Patterns; i++) {
         for(int j = 0; j < inp_dats[i].size(); j++) {
             ofs_sin << inp_dats[i][j] << "\t";
         }
         forwardPropagation(neurons, inp_dats[i]);
+        
+        // 各ニューロンの出力をファイルに出力
+        ofs_x << i << "\t";
+        for(int j = 0; j < neurons.size(); j++) {
+            for(int k = 0; k < neurons[j].size(); k++) {
+                ofs_x << neurons[j][k]->getX() << "\t";
+            }
+        }
+        ofs_x << endl;
 
         for(int j = 0; j < tsignal[i].size(); j++) {
             ofs_sin << (2 * A[i] * tsignal[i][j] - A[i]) << "\t";
