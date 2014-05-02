@@ -240,9 +240,10 @@ int main()
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
-    ofstream ofs_tsignal("tsignal.txt");
+    ofstream ofs_tsignal("tsignal.dat");
     double A[Patterns];
     double Lambda[Patterns];
+    ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
         A[i] = my_rand(-1.0, 1.0, 2);
         Lambda[i] = my_rand(0.1, PAI, 2);
@@ -252,7 +253,7 @@ int main()
             inp_dats[i].push_back(sin_data);
             tsignal[i].push_back(sin_data);
         }
-        ofs_tsignal << i << ", A:" << A[i] << ", Lambda:" << Lambda[i] << endl;
+        ofs_tsignal << i << "\t" << A[i] << "\t" << Lambda[i] << endl;
     }
     
     ofstream ofs_err("error.dat");
