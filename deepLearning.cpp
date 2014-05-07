@@ -242,19 +242,17 @@ int main()
     vector<double> tsignal[Patterns];
 
     ofstream ofs_tsignal("tsignal.dat");
-    double A[Patterns];
-    double Lambda[Patterns];
     ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
-        A[i] = my_rand(-1.0, 1.0, 2);
-        Lambda[i] = my_rand(0.1, PAI, 2);
+        double A = my_rand(-1.0, 1.0, 2);
+        double Lambda = my_rand(0.1, PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
-            double sin_data = (A[i] * sin(Lambda[i] * inp_data) + A[i]) / (2 * A[i]);
+            double sin_data = A * sin(Lambda * inp_data);
             inp_dats[i].push_back(sin_data);
             tsignal[i].push_back(sin_data);
         }
-        ofs_tsignal << i << "\t" << A[i] << "\t" << Lambda[i] << endl;
+        ofs_tsignal << i << "\t" << A << "\t" << Lambda << endl;
     }
     
     ofstream ofs_err("error.dat");
@@ -349,10 +347,10 @@ int main()
         ofs_x << endl;
 
         for(int j = 0; j < tsignal[i].size(); j++) {
-            ofs_sin << (2 * A[i] * tsignal[i][j] - A[i]) << "\t";
+            ofs_sin <<tsignal[i][j] << "\t";
         }
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            ofs_sin << (2 * A[i] * neurons[neurons.size() - 1][j]->getX() - A[i]) << "\t";
+            ofs_sin << neurons[neurons.size() - 1][j]->getX() << "\t";
         }
         ofs_sin << endl;
     }
