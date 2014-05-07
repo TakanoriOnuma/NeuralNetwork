@@ -211,11 +211,13 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを3層でN+1-3-N+1にする
-    neurons.resize(3);
+    // ニューロンを5層でN+1-5-3-5-N+1にする
+    neurons.resize(5);
     neurons[0].resize(N + 1);
-    neurons[1].resize(3);
-    neurons[2].resize(N + 1);
+    neurons[1].resize(5);
+    neurons[2].resize(3);
+    neurons[3].resize(5);
+    neurons[4].resize(N + 1);
 
     vector<double> w(1);
     w[0] = 1.0;
@@ -237,14 +239,14 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 30;
+    const int Patterns = 10;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
     ofstream ofs_tsignal("tsignal.dat");
     ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
-        double A = my_rand(-1.0, 1.0, 2);
+        double A = my_rand(0.1, 0.8, 2);
         double Lambda = my_rand(0.1, PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
