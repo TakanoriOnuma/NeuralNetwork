@@ -8,7 +8,7 @@ using namespace std;
 
 
 const int    N       = 10;
-const double Eta     = 0.5;
+const double Eta     = 0.1;
 const double Alpha   = 0.8;
 const double PAI     = 3.14159265359;
 const double ErrorEv = 0.03;
@@ -239,7 +239,7 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 10;
+    const int Patterns = 30;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
@@ -272,7 +272,7 @@ int main()
     ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 1000; i++) {
+    for(int i = 0; vError > ErrorEv && i < 10000; i++) {
         // ファイルに出力
         ofs_err << i << "\t" << vError << endl;
         ofs_w << i << "\t";
