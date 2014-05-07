@@ -17,12 +17,12 @@ const double Rhigh   = 1.0;
 
 inline double fout(double x)
 {
-    return 1 / (1 + exp(-x));
+    return tanh(x);
 }
 
 inline double delta_fout(double fout_value)
 {
-    return fout_value * (1.0 - fout_value);
+    return 1 - fout_value * fout_value;
 }
 
 // dec_point_num <= 3‚ª‚¢‚¢B4‚©‚ç­‚µ“®ì‚ª•Ï
