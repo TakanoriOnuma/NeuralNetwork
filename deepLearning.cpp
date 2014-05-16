@@ -313,17 +313,29 @@ int main()
 
     // 結果を出力
     ofstream ofs_sin("out_sin.dat");
-    ofs_sin << "# ";
-    for(int i = 0; i < inp_dats[0].size(); i++) {
-        ofs_sin << "inp_dats[" << i << "]" << "\t";
-    }
-    for(int i = 0; i < tsignal[0].size(); i++) {
-        ofs_sin << "tsignal[" << i << "]" << "\t";
-    }
-    for(int i = 0; i < neurons[neurons.size() - 1].size(); i++) {
-        ofs_sin << "output[" << i << "]" << "\t";
+    ofs_sin << "# x" << "\t";
+    for(int i = 0; i < Patterns; i++) {
+        ofs_sin << "tsignal[" << i << "]\t" << "output[" << i << "]\t";
     }
     ofs_sin << endl;
+
+    double out_sin[Patterns][N + 1];        // sinの学習結果
+
+    // 学習結果のsinを格納する
+    for(int i = 0; i < Patterns; i++) {
+        forwardPropagation(neurons, inp_dats[i]);
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
+        }
+    }
+
+    for(int i = 0; i < N + 1; i++) {
+        ofs_sin << (2.0 * i / N - 1.0) << "\t";
+        for(int j = 0; j < Patterns; j++) {
+            ofs_sin << tsignal[j][i] << "\t" << out_sin[j][i] << "\t";
+        }
+        ofs_sin << endl;
+    }
 
     ofstream ofs_x("out_x.dat");
     ofs_x << "# pattern" << "\t";
@@ -334,9 +346,6 @@ int main()
     }
     ofs_x << endl;
     for(int i = 0; i < Patterns; i++) {
-        for(int j = 0; j < inp_dats[i].size(); j++) {
-            ofs_sin << inp_dats[i][j] << "\t";
-        }
         forwardPropagation(neurons, inp_dats[i]);
         
         // 各ニューロンの出力をファイルに出力
@@ -347,14 +356,6 @@ int main()
             }
         }
         ofs_x << endl;
-
-        for(int j = 0; j < tsignal[i].size(); j++) {
-            ofs_sin <<tsignal[i][j] << "\t";
-        }
-        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            ofs_sin << neurons[neurons.size() - 1][j]->getX() << "\t";
-        }
-        ofs_sin << endl;
     }
 
     // ニューロンの削除（動的に確保したため）
