@@ -320,14 +320,21 @@ int main()
     ofs_sin << endl;
 
     double out_sin[Patterns][N + 1];        // sinの学習結果
-    ofstream ofs_x("out_x.dat");
+    ofstream ofs_x("out_x.dat");            // 全てのニューロンの出力
+    ofstream ofs_middle("out_middle.dat");  // 中間層のデータ
     ofs_x << "# pattern" << "\t";
+    ofs_middle << "# pattern" << "\t";
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
             ofs_x << "neuron[" << i << "][" << j << "]" << "\t";
+            // 中間層なら
+            if(i == neurons.size() / 2) {
+                ofs_middle << "neuron[" << i << "][" << j << "]" << "\t";
+            }
         }
     }
     ofs_x << endl;
+    ofs_middle << endl;
 
     // 学習結果のsinを格納する
     for(int i = 0; i < Patterns; i++) {
@@ -335,12 +342,18 @@ int main()
 
         // 各ニューロンの出力をファイルに出力
         ofs_x << i << "\t";
+        ofs_middle << i << "\t";
         for(int j = 0; j < neurons.size(); j++) {
             for(int k = 0; k < neurons[j].size(); k++) {
                 ofs_x << neurons[j][k]->getX() << "\t";
+                // 中間層なら
+                if(j == neurons.size() / 2) {
+                    ofs_middle << neurons[j][k]->getX() << "\t";
+                }
             }
         }
         ofs_x << endl;
+        ofs_middle << endl;
 
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
             out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
