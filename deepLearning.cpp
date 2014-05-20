@@ -8,7 +8,7 @@ using namespace std;
 
 
 const int    N       = 10;
-const double Eta     = 0.1;
+const double Eta     = 0.05;
 const double Alpha   = 0.8;
 const double PAI     = 3.14159265359;
 const double ErrorEv = 0.03;
@@ -181,7 +181,7 @@ double calcError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats
         forwardPropagation(neurons, inp_dats[i]);
 
         for(int j = 0; j < out_neurons.size(); j++) {
-            error += pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0);
+            error += sqrt(pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0));
         }
     }
     error *= 0.5;
@@ -274,7 +274,7 @@ int main()
     ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 10000; i++) {
+    for(int i = 0; vError > ErrorEv && i < 20000; i++) {
         // ファイルに出力
         ofs_err << i << "\t" << vError << endl;
         ofs_w << i << "\t";
