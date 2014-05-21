@@ -7,13 +7,14 @@
 using namespace std;
 
 
-const int    N       = 10;
-const double Eta     = 0.05;
-const double Alpha   = 0.8;
-const double PAI     = 3.14159265359;
-const double ErrorEv = 0.03;
-const double Rlow    = -1.0;
-const double Rhigh   = 1.0;
+const int    N        = 16;         // sin波のプロットする個数
+const int    NUM_STEP = 10000;      // 1回のループで学習させる回数
+const double Eta      = 0.05;
+const double Alpha    = 0.8;
+const double PAI      = 3.14159265359;
+const double ErrorEv  = 0.03;
+const double Rlow     = -1.0;
+const double Rhigh    = 1.0;
 
 inline double fout(double x)
 {
@@ -211,12 +212,12 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを5層でN+1-5-3-5-N+1にする
+    // ニューロンを5層でN+1-5-2-5-N+1にする
     neurons.resize(5);
     neurons[0].resize(N + 1);
-    neurons[1].resize(5);
+    neurons[1].resize(7);
     neurons[2].resize(3);
-    neurons[3].resize(5);
+    neurons[3].resize(7);
     neurons[4].resize(N + 1);
 
     vector<double> w(1);
@@ -239,7 +240,7 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 30;
+    const int Patterns = 300;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
     double A[Patterns];
@@ -249,7 +250,7 @@ int main()
     ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
         A[i] = my_rand(0.1, 0.8, 2);
-        Lambda[i] = my_rand(0.1, PAI, 2);
+        Lambda[i] = my_rand(1.0, PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
             double sin_data = A[i] * sin(Lambda[i] * inp_data);
@@ -274,9 +275,10 @@ int main()
     ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 20000; i++) {
+    for(int i = 0; vError > ErrorEv && i < 100; i++) {
         // ファイルに出力
         ofs_err << i << "\t" << vError << endl;
+        cout << vError << endl;
         ofs_w << i << "\t";
         for(int ii = 1; ii < neurons.size(); ii++) {
             for(int j = 0; j < neurons[ii].size(); j++) {
@@ -288,10 +290,13 @@ int main()
         }
         ofs_w << endl;
 
-        for(int j = 0; j < Patterns; j++) {
-            forwardPropagation(neurons, inp_dats[j]);
-            backPropagation(neurons, tsignal[j]);
+        for(int step = 0; step < NUM_STEP; step++) {
+            for(int j = 0; j < Patterns; j++) {
+                forwardPropagation(neurons, inp_dats[j]);
+                backPropagation(neurons, tsignal[j]);
+            }
         }
+
         vError = calcError(neurons, inp_dats, tsignal, Patterns);
     }
 
