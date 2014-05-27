@@ -9,7 +9,7 @@ using namespace std;
 
 const int    N        = 16;         // sin波のプロットする個数
 const int    NUM_STEP = 10000;      // 1回のループで学習させる回数
-const double Eta      = 0.05;
+const double Eta      = 0.03;
 const double Alpha    = 0.8;
 const double PAI      = 3.14159265359;
 const double ErrorEv  = 0.03;
@@ -240,7 +240,7 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 300;
+    const int Patterns = 30;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
     double A[Patterns];
@@ -250,7 +250,7 @@ int main()
     ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
         A[i] = my_rand(0.1, 0.8, 2);
-        Lambda[i] = my_rand(1.0, PAI, 2);
+        Lambda[i] = my_rand(PAI, 2 * PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
             double sin_data = A[i] * sin(Lambda[i] * inp_data);
