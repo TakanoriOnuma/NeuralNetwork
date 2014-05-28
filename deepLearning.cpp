@@ -326,20 +326,11 @@ int main()
     ofs_sin << endl;
 
     double out_sin[Patterns][N + 1];        // sinの学習結果
-    ofstream ofs_x("out_x.dat");            // 全てのニューロンの出力
     ofstream ofs_middle("out_middle.dat");  // 中間層のデータ
-    ofs_x << "# pattern" << "\t";
     ofs_middle << "# A" << "\t" << "λ" << "\t";
-    for(int i = 0; i < neurons.size(); i++) {
-        for(int j = 0; j < neurons[i].size(); j++) {
-            ofs_x << "neuron[" << i << "][" << j << "]" << "\t";
-            // 中間層なら
-            if(i == neurons.size() / 2) {
-                ofs_middle << "neuron[" << i << "][" << j << "]" << "\t";
-            }
-        }
+    for(int j = 0; j < neurons[neurons.size() / 2].size(); j++) {
+        ofs_middle << "neuron[" << neurons.size() / 2 << "][" << j << "]" << "\t";
     }
-    ofs_x << endl;
     ofs_middle << endl;
     ofs_middle << "# λ=3.14" << endl;
 
@@ -355,23 +346,20 @@ int main()
         
         forwardPropagation(neurons, sin_dat);
 
-        // 各ニューロンの出力をファイルに出力
-//        ofs_x << i << "\t";
+        // 中間層の出力をファイルに出力
         ofs_middle << A << "\t" << Lambda << "\t";
-        for(int j = 0; j < neurons.size(); j++) {
-            for(int k = 0; k < neurons[j].size(); k++) {
-                ofs_x << neurons[j][k]->getX() << "\t";
-                // 中間層なら
-                if(j == neurons.size() / 2) {
-                    ofs_middle << neurons[j][k]->getX() << "\t";
-                }
-            }
+        const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
+        for(int i = 0; i < mid_neurons.size(); i++) {
+            ofs_middle << mid_neurons[i]->getX() << "\t";
         }
-        ofs_x << endl;
         ofs_middle << endl;
+    }
 
+    // 学習後のsinを求める
+    for(int i = 0; i < Patterns; i++) {
+        forwardPropagation(neurons, inp_dats[i]);
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-//            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
+            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
         }
     }
 
