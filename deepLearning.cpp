@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -248,7 +249,7 @@ void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
 void outLearningSinData(const char* filename, vector<vector<Neuron*>> neurons, const vector<double> inp_dats[], const vector<double> tsignal[])
 {
     // 結果を出力
-    ofstream ofs_sin("out_sin.dat");
+    ofstream ofs_sin(filename);
     ofs_sin << "# x" << "\t";
     for(int i = 0; i < Patterns; i++) {
         ofs_sin << "tsignal[" << i << "]\t" << "output[" << i << "]\t";
@@ -341,33 +342,39 @@ int main()
     ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 10; i++) {
-        // ファイルに出力
-        ofs_err << i << "\t" << vError << endl;
-        cout << vError << endl;
-        ofs_w << i << "\t";
-        for(int ii = 1; ii < neurons.size(); ii++) {
-            for(int j = 0; j < neurons[ii].size(); j++) {
-                const vector<double>& w = neurons[ii][j]->getW();
-                for(int k = 0; k < w.size(); k++) {
-                    ofs_w << w[k] << "\t";
+    for(int i = 0; vError > ErrorEv && i < 100; ) {
+        for(int j = 0; j < 10; i++, j++) {
+            // ファイルに出力
+            ofs_err << i << "\t" << vError << endl;
+            cout << vError << endl;
+            ofs_w << i << "\t";
+            for(int ii = 1; ii < neurons.size(); ii++) {
+                for(int j = 0; j < neurons[ii].size(); j++) {
+                    const vector<double>& w = neurons[ii][j]->getW();
+                    for(int k = 0; k < w.size(); k++) {
+                        ofs_w << w[k] << "\t";
+                    }
                 }
             }
-        }
-        ofs_w << endl;
+            ofs_w << endl;
 
-        for(int step = 0; step < NUM_STEP; step++) {
-            for(int j = 0; j < Patterns; j++) {
-                forwardPropagation(neurons, inp_dats[j]);
-                backPropagation(neurons, tsignal[j]);
+            for(int step = 0; step < NUM_STEP; step++) {
+                for(int j = 0; j < Patterns; j++) {
+                    forwardPropagation(neurons, inp_dats[j]);
+                    backPropagation(neurons, tsignal[j]);
+                }
             }
-        }
 
-        vError = calcError(neurons, inp_dats, tsignal, Patterns);
+            vError = calcError(neurons, inp_dats, tsignal, Patterns);
+        }
+        stringstream filename;
+        filename << "out_middle" << i << ".dat";
+        outMiddleData(filename.str().c_str(), neurons);
+        filename.str("");
+        filename << "out_sin" << i << ".dat";
+        outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
     }
 
-    outMiddleData("out_middle.dat", neurons);
-    outLearningSinData("out_sin.dat", neurons, inp_dats, tsignal);
 
     // ニューロンの削除（動的に確保したため）
     for(int i = 0; i < neurons.size(); i++) {
