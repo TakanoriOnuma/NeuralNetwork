@@ -244,21 +244,19 @@ int main()
     const int Patterns = 30;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
-    double A[Patterns];
-    double Lambda[Patterns];
 
     ofstream ofs_tsignal("tsignal.dat");
     ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
     for(int i = 0; i < Patterns; i++) {
-        A[i] = my_rand(0.1, 0.8, 2);
-        Lambda[i] = my_rand(PAI, 2 * PAI, 2);
+        double A = my_rand(0.1, 0.8, 2);
+        double Lambda = my_rand(PAI, 2 * PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
-            double sin_data = A[i] * sin(Lambda[i] * inp_data);
+            double sin_data = A * sin(Lambda * inp_data);
             inp_dats[i].push_back(sin_data);
             tsignal[i].push_back(sin_data);
         }
-        ofs_tsignal << i << "\t" << A[i] << "\t" << Lambda[i] << endl;
+        ofs_tsignal << i << "\t" << A << "\t" << Lambda << endl;
     }
     
     ofstream ofs_err("error.dat");
@@ -331,7 +329,7 @@ int main()
     ofstream ofs_x("out_x.dat");            // 全てのニューロンの出力
     ofstream ofs_middle("out_middle.dat");  // 中間層のデータ
     ofs_x << "# pattern" << "\t";
-    ofs_middle << "# pattern\t" << "A\t" << "Lambda\t";
+    ofs_middle << "# pattern" << "\t";
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
             ofs_x << "neuron[" << i << "][" << j << "]" << "\t";
@@ -350,7 +348,7 @@ int main()
 
         // 各ニューロンの出力をファイルに出力
         ofs_x << i << "\t";
-        ofs_middle << i << "\t" << A[i] << "\t" << Lambda[i] << "\t";
+        ofs_middle << i << "\t";
         for(int j = 0; j < neurons.size(); j++) {
             for(int k = 0; k < neurons[j].size(); k++) {
                 ofs_x << neurons[j][k]->getX() << "\t";
