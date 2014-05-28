@@ -194,12 +194,13 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
 {
     ofstream ofs(filename);
 
-    ofs << "N:"       << N       << endl;
-    ofs << "Eta:"     << Eta     << endl;
-    ofs << "Alpha:"   << Alpha   << endl;
-    ofs << "ErrorEv:" << ErrorEv << endl;
-    ofs << "Rlow:"    << Rlow    << endl;
-    ofs << "Rhigh:"   << Rhigh   << endl;
+    ofs << "N:"       << N        << endl;
+    ofs << "Eta:"     << Eta      << endl;
+    ofs << "Alpha:"   << Alpha    << endl;
+    ofs << "ErrorEv:" << ErrorEv  << endl;
+    ofs << "Rlow:"    << Rlow     << endl;
+    ofs << "Rhigh:"   << Rhigh    << endl;
+    ofs << "NumStep:" << NUM_STEP << endl;
     ofs << "--- Neuron ŠK‘w:" << neurons.size() << " ---" << endl;
     for(int i = 0; i < neurons.size(); i++) {
         ofs << "‘æ" << (i + 1) << "‘w:" << "ƒjƒ…[ƒƒ“" << neurons[i].size() << "ŒÂ" << endl;
@@ -212,7 +213,7 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ƒjƒ…[ƒƒ“‚ğ5‘w‚ÅN+1-5-2-5-N+1‚É‚·‚é
+    // ƒjƒ…[ƒƒ“‚ğ5‘w‚ÅN+1-7-3-7-N+1‚É‚·‚é
     neurons.resize(5);
     neurons[0].resize(N + 1);
     neurons[1].resize(7);
