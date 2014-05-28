@@ -207,6 +207,40 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
     }
 }
 
+void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
+{
+    ofstream ofs_middle(filename);  // 中間層のデータ
+    ofs_middle << "# A" << "\t" << "λ" << "\t";
+    for(int j = 0; j < neurons[neurons.size() / 2].size(); j++) {
+        ofs_middle << "neuron[" << neurons.size() / 2 << "][" << j << "]" << "\t";
+    }
+    ofs_middle << endl;
+
+    // 中間層の出力を求める
+    for(double Lambda = PAI; Lambda <= 2 * PAI; Lambda += 0.1) {
+        ofs_middle << "# λ=" << Lambda << endl;
+        for(double A = 0.1; A <= 0.8; A += 0.02) {
+            // 入力するsin波を作る
+            vector<double> sin_dat;
+            for(int i = 0; i < N + 1; i++) {
+                double in_data = 2.0 * i / N - 1.0;
+                sin_dat.push_back(A * sin(Lambda * in_data));
+            }
+        
+            forwardPropagation(neurons, sin_dat);
+
+            // 中間層の出力をファイルに出力
+            ofs_middle << A << "\t" << Lambda << "\t";
+            const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
+            for(int i = 0; i < mid_neurons.size(); i++) {
+                ofs_middle << mid_neurons[i]->getX() << "\t";
+            }
+            ofs_middle << endl;
+        }
+        ofs_middle << endl;
+    }
+}
+
 int main()
 {
     srand((unsigned int)time(NULL));
@@ -326,36 +360,7 @@ int main()
     ofs_sin << endl;
 
     double out_sin[Patterns][N + 1];        // sinの学習結果
-    ofstream ofs_middle("out_middle.dat");  // 中間層のデータ
-    ofs_middle << "# A" << "\t" << "λ" << "\t";
-    for(int j = 0; j < neurons[neurons.size() / 2].size(); j++) {
-        ofs_middle << "neuron[" << neurons.size() / 2 << "][" << j << "]" << "\t";
-    }
-    ofs_middle << endl;
-
-    // 中間層の出力を求める
-    for(double Lambda = PAI; Lambda <= 2 * PAI; Lambda += 0.1) {
-        ofs_middle << "# λ=" << Lambda << endl;
-        for(double A = 0.1; A <= 0.8; A += 0.02) {
-            // 入力するsin波を作る
-            vector<double> sin_dat;
-            for(int i = 0; i < N + 1; i++) {
-                double in_data = 2.0 * i / N - 1.0;
-                sin_dat.push_back(A * sin(Lambda * in_data));
-            }
-        
-            forwardPropagation(neurons, sin_dat);
-
-            // 中間層の出力をファイルに出力
-            ofs_middle << A << "\t" << Lambda << "\t";
-            const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
-            for(int i = 0; i < mid_neurons.size(); i++) {
-                ofs_middle << mid_neurons[i]->getX() << "\t";
-            }
-            ofs_middle << endl;
-        }
-        ofs_middle << endl;
-    }
+    outMiddleData("out_middle.dat", neurons);
 
     // 学習後のsinを求める
     for(int i = 0; i < Patterns; i++) {
