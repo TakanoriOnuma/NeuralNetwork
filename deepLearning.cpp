@@ -332,25 +332,27 @@ int main()
         ofs_middle << "neuron[" << neurons.size() / 2 << "][" << j << "]" << "\t";
     }
     ofs_middle << endl;
-    ofs_middle << "# ƒÉ=3.14" << endl;
 
-    // ŠwKŒ‹‰Ê‚Ìsin‚ðŠi”[‚·‚é
-    for(double A = 0.1; A <= 0.8; A += 0.02) {
-        double Lambda = 3.14;
-        // “ü—Í‚·‚ésin”g‚ðì‚é
-        vector<double> sin_dat;
-        for(int i = 0; i < N + 1; i++) {
-            double in_data = 2.0 * i / N - 1.0;
-            sin_dat.push_back(A * sin(Lambda * in_data));
-        }
+    // ’†ŠÔ‘w‚Ìo—Í‚ð‹‚ß‚é
+    for(double Lambda = PAI; Lambda <= 2 * PAI; Lambda += 0.1) {
+        ofs_middle << "# ƒÉ=" << Lambda << endl;
+        for(double A = 0.1; A <= 0.8; A += 0.02) {
+            // “ü—Í‚·‚ésin”g‚ðì‚é
+            vector<double> sin_dat;
+            for(int i = 0; i < N + 1; i++) {
+                double in_data = 2.0 * i / N - 1.0;
+                sin_dat.push_back(A * sin(Lambda * in_data));
+            }
         
-        forwardPropagation(neurons, sin_dat);
+            forwardPropagation(neurons, sin_dat);
 
-        // ’†ŠÔ‘w‚Ìo—Í‚ðƒtƒ@ƒCƒ‹‚Éo—Í
-        ofs_middle << A << "\t" << Lambda << "\t";
-        const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
-        for(int i = 0; i < mid_neurons.size(); i++) {
-            ofs_middle << mid_neurons[i]->getX() << "\t";
+            // ’†ŠÔ‘w‚Ìo—Í‚ðƒtƒ@ƒCƒ‹‚Éo—Í
+            ofs_middle << A << "\t" << Lambda << "\t";
+            const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
+            for(int i = 0; i < mid_neurons.size(); i++) {
+                ofs_middle << mid_neurons[i]->getX() << "\t";
+            }
+            ofs_middle << endl;
         }
         ofs_middle << endl;
     }
