@@ -366,24 +366,6 @@ int main()
         vError = calcError(neurons, inp_dats, tsignal, Patterns);
     }
 
-    // ニューロンデータの出力
-    for(int i = 0; i < neurons.size(); i++) {
-        for(int j = 0; j < neurons[i].size(); j++) {
-            cout << "neurons[" << i << "][" << j << "]:"
-                << neurons[i][j]->getW().size() << ", " << neurons[i][j]->getBias() << ", "
-                << neurons[i][j]->getU() << ", " << neurons[i][j]->getX() << endl;
-      
-            for each(double w in neurons[i][j]->getW()) {
-                cout << w << ", ";
-            }
-            cout << endl;
-            for each(double delta_w in neurons[i][j]->getDeltaW()) {
-                cout << delta_w << ", ";
-            }
-            cout << endl;
-        }
-    }
-
     outMiddleData("out_middle.dat", neurons);
     outLearningSinData("out_sin.dat", neurons, inp_dats, tsignal);
 
