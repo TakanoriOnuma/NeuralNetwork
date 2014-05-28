@@ -274,7 +274,7 @@ int main()
     ofs_w << endl;
     // 学習をする
     double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 100; i++) {
+    for(int i = 0; vError > ErrorEv && i < 10; i++) {
         // ファイルに出力
         ofs_err << i << "\t" << vError << endl;
         cout << vError << endl;
@@ -329,7 +329,7 @@ int main()
     ofstream ofs_x("out_x.dat");            // 全てのニューロンの出力
     ofstream ofs_middle("out_middle.dat");  // 中間層のデータ
     ofs_x << "# pattern" << "\t";
-    ofs_middle << "# pattern" << "\t";
+    ofs_middle << "# A" << "\t" << "λ" << "\t";
     for(int i = 0; i < neurons.size(); i++) {
         for(int j = 0; j < neurons[i].size(); j++) {
             ofs_x << "neuron[" << i << "][" << j << "]" << "\t";
@@ -341,14 +341,23 @@ int main()
     }
     ofs_x << endl;
     ofs_middle << endl;
+    ofs_middle << "# λ=3.14" << endl;
 
     // 学習結果のsinを格納する
-    for(int i = 0; i < Patterns; i++) {
-        forwardPropagation(neurons, inp_dats[i]);
+    for(double A = 0.1; A <= 0.8; A += 0.02) {
+        double Lambda = 3.14;
+        // 入力するsin波を作る
+        vector<double> sin_dat;
+        for(int i = 0; i < N + 1; i++) {
+            double in_data = 2.0 * i / N - 1.0;
+            sin_dat.push_back(A * sin(Lambda * in_data));
+        }
+        
+        forwardPropagation(neurons, sin_dat);
 
         // 各ニューロンの出力をファイルに出力
-        ofs_x << i << "\t";
-        ofs_middle << i << "\t";
+//        ofs_x << i << "\t";
+        ofs_middle << A << "\t" << Lambda << "\t";
         for(int j = 0; j < neurons.size(); j++) {
             for(int k = 0; k < neurons[j].size(); k++) {
                 ofs_x << neurons[j][k]->getX() << "\t";
@@ -362,7 +371,7 @@ int main()
         ofs_middle << endl;
 
         for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
+//            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
         }
     }
 
