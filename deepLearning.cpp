@@ -9,6 +9,7 @@ using namespace std;
 
 const int    N        = 16;         // sin波のプロットする個数
 const int    NUM_STEP = 10000;      // 1回のループで学習させる回数
+const int    Patterns = 30;
 const double Eta      = 0.03;
 const double Alpha    = 0.8;
 const double PAI      = 3.14159265359;
@@ -207,6 +208,7 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
     }
 }
 
+// 中間層の出力結果をファイルに出力
 void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
 {
     ofstream ofs_middle(filename);  // 中間層のデータ
@@ -239,6 +241,38 @@ void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
         }
         ofs_middle << endl;
     }
+}
+
+
+// 学習後のsinデータをファイルに出力
+void outLearningSinData(const char* filename, vector<vector<Neuron*>> neurons, const vector<double> inp_dats[], const vector<double> tsignal[])
+{
+    // 結果を出力
+    ofstream ofs_sin("out_sin.dat");
+    ofs_sin << "# x" << "\t";
+    for(int i = 0; i < Patterns; i++) {
+        ofs_sin << "tsignal[" << i << "]\t" << "output[" << i << "]\t";
+    }
+    ofs_sin << endl;
+
+    double out_sin[Patterns][N + 1];        // sinの学習結果
+
+    // 学習後のsinを求める
+    for(int i = 0; i < Patterns; i++) {
+        forwardPropagation(neurons, inp_dats[i]);
+        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
+            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
+        }
+    }
+
+    for(int i = 0; i < N + 1; i++) {
+        ofs_sin << (2.0 * i / N - 1.0) << "\t";
+        for(int j = 0; j < Patterns; j++) {
+            ofs_sin << tsignal[j][i] << "\t" << out_sin[j][i] << "\t";
+        }
+        ofs_sin << endl;
+    }
+
 }
 
 int main()
@@ -275,7 +309,6 @@ int main()
 
 
     // 教師データの作成
-    const int Patterns = 30;
     vector<double> inp_dats[Patterns];
     vector<double> tsignal[Patterns];
 
@@ -351,32 +384,8 @@ int main()
         }
     }
 
-    // 結果を出力
-    ofstream ofs_sin("out_sin.dat");
-    ofs_sin << "# x" << "\t";
-    for(int i = 0; i < Patterns; i++) {
-        ofs_sin << "tsignal[" << i << "]\t" << "output[" << i << "]\t";
-    }
-    ofs_sin << endl;
-
-    double out_sin[Patterns][N + 1];        // sinの学習結果
     outMiddleData("out_middle.dat", neurons);
-
-    // 学習後のsinを求める
-    for(int i = 0; i < Patterns; i++) {
-        forwardPropagation(neurons, inp_dats[i]);
-        for(int j = 0; j < neurons[neurons.size() - 1].size(); j++) {
-            out_sin[i][j] = neurons[neurons.size() - 1][j]->getX();
-        }
-    }
-
-    for(int i = 0; i < N + 1; i++) {
-        ofs_sin << (2.0 * i / N - 1.0) << "\t";
-        for(int j = 0; j < Patterns; j++) {
-            ofs_sin << tsignal[j][i] << "\t" << out_sin[j][i] << "\t";
-        }
-        ofs_sin << endl;
-    }
+    outLearningSinData("out_sin.dat", neurons, inp_dats, tsignal);
 
     // ニューロンの削除（動的に確保したため）
     for(int i = 0; i < neurons.size(); i++) {
