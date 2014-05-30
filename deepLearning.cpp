@@ -213,27 +213,27 @@ void outNetworkProperty(const char* filename, const vector<vector<Neuron*>>& neu
 void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
 {
     ofstream ofs_middle(filename);  // 中間層のデータ
-    ofs_middle << "# A" << "\t" << "λ" << "\t";
+    ofs_middle << "# A" << "\t" << "ω" << "\t";
     for(int j = 0; j < neurons[neurons.size() / 2].size(); j++) {
         ofs_middle << "neuron[" << neurons.size() / 2 << "][" << j << "]" << "\t";
     }
     ofs_middle << endl;
 
     // 中間層の出力を求める
-    for(double Lambda = PAI; Lambda <= 2 * PAI; Lambda += 0.1) {
-        ofs_middle << "# λ=" << Lambda << endl;
+    for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.1) {
+        ofs_middle << "# ω=" << Omega << endl;
         for(double A = 0.1; A <= 0.8; A += 0.02) {
             // 入力するsin波を作る
             vector<double> sin_dat;
             for(int i = 0; i < N + 1; i++) {
                 double in_data = 2.0 * i / N - 1.0;
-                sin_dat.push_back(A * sin(Lambda * in_data));
+                sin_dat.push_back(A * sin(Omega * in_data));
             }
         
             forwardPropagation(neurons, sin_dat);
 
             // 中間層の出力をファイルに出力
-            ofs_middle << A << "\t" << Lambda << "\t";
+            ofs_middle << A << "\t" << Omega << "\t";
             const vector<Neuron*>& mid_neurons = neurons[neurons.size() / 2];
             for(int i = 0; i < mid_neurons.size(); i++) {
                 ofs_middle << mid_neurons[i]->getX() << "\t";
@@ -314,17 +314,17 @@ int main()
     vector<double> tsignal[Patterns];
 
     ofstream ofs_tsignal("tsignal.dat");
-    ofs_tsignal << "# pattern\t" << "A\t" << "Lambda\t" << endl;
+    ofs_tsignal << "# pattern\t" << "A\t" << "Omega\t" << endl;
     for(int i = 0; i < Patterns; i++) {
         double A = my_rand(0.1, 0.8, 2);
-        double Lambda = my_rand(PAI, 2 * PAI, 2);
+        double Omega = my_rand(PAI, 2 * PAI, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
-            double sin_data = A * sin(Lambda * inp_data);
+            double sin_data = A * sin(Omega * inp_data);
             inp_dats[i].push_back(sin_data);
             tsignal[i].push_back(sin_data);
         }
-        ofs_tsignal << i << "\t" << A << "\t" << Lambda << endl;
+        ofs_tsignal << i << "\t" << A << "\t" << Omega << endl;
     }
     
     ofstream ofs_err("error.dat");
