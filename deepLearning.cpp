@@ -174,7 +174,7 @@ void backPropagation(vector<vector<Neuron*>>& neurons, const vector<double>& tsi
     }
 }
 
-double calcError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats[], const vector<double> tsignal[], const int patterns)
+double calcSignalError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats[], const vector<double> tsignal[], const int patterns)
 {
     double error = 0.0;
     const vector<Neuron*>& out_neurons = neurons[neurons.size() - 1];
@@ -185,6 +185,32 @@ double calcError(vector<vector<Neuron*>>& neurons, const vector<double> inp_dats
 
         for(int j = 0; j < out_neurons.size(); j++) {
             error += sqrt(pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0));
+        }
+    }
+    error *= 0.5;
+
+    return error;
+}
+
+double calcGeneralError(vector<vector<Neuron*>>& neurons)
+{
+    double error = 0.0;
+    const vector<Neuron*>& out_neurons = neurons[neurons.size() - 1];
+    vector<double> inp_dats(out_neurons.size());
+
+    // グラフで使う値を使って汎用誤差を集計する
+    for(double A = 0.1; A <= 0.8; A += 0.02) {
+        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.1) {
+            for(int i = 0; i < N + 1; i++) {
+                double x = 2.0 * i / N - 1.0;
+                inp_dats[i] = A * sin(Omega * x);
+            }
+
+            forwardPropagation(neurons, inp_dats);
+
+            for(int i = 0; i < out_neurons.size(); i++) {
+                error += sqrt(pow(inp_dats[i] - out_neurons[i]->getX(), 2.0));
+            }
         }
     }
     error *= 0.5;
@@ -328,7 +354,7 @@ int main()
     }
     
     ofstream ofs_err("error.dat");
-    ofs_err << "# " << "step\t" << "error" << endl;
+    ofs_err << "# " << "step\t" << "signal-error\t" << "estimate-error\t" << "general-error" << endl;
     ofstream ofs_w("out_w.dat");
     ofs_w << "# " << "step\t";
     for(int i = 1; i < neurons.size(); i++) {
@@ -341,12 +367,13 @@ int main()
     }
     ofs_w << endl;
     // 学習をする
-    double vError = calcError(neurons, inp_dats, tsignal, Patterns);
-    for(int i = 0; vError > ErrorEv && i < 100; ) {
+    double sigError = calcSignalError(neurons, inp_dats, tsignal, Patterns);
+    double geneError = calcGeneralError(neurons);
+    for(int i = 0; sigError > ErrorEv && i < 100; ) {
         for(int j = 0; j < 10; i++, j++) {
             // ファイルに出力
-            ofs_err << i << "\t" << vError << endl;
-            cout << vError << endl;
+            ofs_err  << i << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+            cout << sigError << ", " << 36 * sigError << ", " << geneError << endl;
             ofs_w << i << "\t";
             for(int ii = 1; ii < neurons.size(); ii++) {
                 for(int j = 0; j < neurons[ii].size(); j++) {
@@ -365,7 +392,8 @@ int main()
                 }
             }
 
-            vError = calcError(neurons, inp_dats, tsignal, Patterns);
+            sigError  = calcSignalError(neurons, inp_dats, tsignal, Patterns);
+            geneError = calcGeneralError(neurons);
         }
         stringstream filename;
         filename << "out_middle" << i << ".dat";
