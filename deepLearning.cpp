@@ -302,6 +302,62 @@ void outLearningSinData(const char* filename, vector<vector<Neuron*>> neurons, c
 
 }
 
+// 一般のsinデータでの出力結果をファイルに出力
+void outGeneralSinData(const char* filename, vector<vector<Neuron*>> neurons)
+{
+    ofstream ofs_sin(filename);
+    ofs_sin << "# x" << "\t";
+    for(double A = 0.1; A <= 0.8; A += 0.1) {
+        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.5) {
+            ofs_sin << "A = " << A << ", Omega = " << Omega << "\t" << "output" << "\t";
+        }
+    }
+    ofs_sin << endl;
+
+    const int pattern_A = (0.8 - 0.1) / 0.1 + 1;
+    const int pattern_Omega = (2 * PAI - PAI) / 0.5 + 1;
+    // メモリの確保
+    double** out_sin = new double* [2 * pattern_A * pattern_Omega];
+    for(int i = 0; i < 2 * pattern_A * pattern_Omega; i++) {
+        out_sin[i] = new double[N + 1];
+    }
+    
+    // 出力結果をメモリに保存する
+    int idx = 0;       // 配列の添え字番号
+    for(double A = 0.1; A <= 0.8; A += 0.1) {
+        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.5) {
+            vector<double> inp_dats(N + 1);
+            for(int i = 0; i < N + 1; i++) {
+                double x = 2.0 * i / N - 1.0;
+                inp_dats[i] = A * sin(Omega * x);
+            }
+
+            forwardPropagation(neurons, inp_dats);
+
+            for(int i = 0; i < N + 1; i++) {
+                out_sin[idx    ][i] = inp_dats[i];
+                out_sin[idx + 1][i] = neurons[neurons.size() - 1][i]->getX(); 
+            }
+            idx += 2;
+        }
+    }
+
+    // 結果をファイルに出力する
+    for(int i = 0; i < N + 1; i++) {
+        ofs_sin << (2.0 * i / N - 1.0) << "\t";
+        for(int j = 0; j < 2 * pattern_A * pattern_Omega; j++) {
+            ofs_sin << out_sin[j][i] << "\t";
+        }
+        ofs_sin << endl;
+    }
+
+    // メモリの解放
+    for(int i = 0; i < pattern_A * pattern_Omega; i++) {
+        delete out_sin[i];
+    }
+    delete out_sin;
+}
+
 int main()
 {
     srand((unsigned int)time(NULL));
@@ -401,6 +457,9 @@ int main()
         filename.str("");
         filename << "out_sin" << i << ".dat";
         outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
+        filename.str("");
+        filename << "out_gene_sin" << i << ".dat";
+        outGeneralSinData(filename.str().c_str(), neurons);
     }
 
 
