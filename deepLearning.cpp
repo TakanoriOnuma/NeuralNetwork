@@ -9,7 +9,7 @@ using namespace std;
 
 
 const int    N        = 16;         // sin波のプロットする個数
-const int    NUM_STEP = 10000;      // 1回のループで学習させる回数
+const int    NUM_STEP = 1;      // 1回のループで学習させる回数
 const int    Patterns = 30;
 const double Eta      = 0.03;
 const double Alpha    = 0.8;
@@ -427,6 +427,18 @@ int main()
     double geneError = calcGeneralError(neurons);
     for(int i = 0; sigError > ErrorEv && i < 100; ) {
         for(int j = 0; j < 10; i++, j++) {
+            if(i < 10) {
+                stringstream filename;
+                filename << "out_middle" << i << ".dat";
+                outMiddleData(filename.str().c_str(), neurons);
+                filename.str("");
+                filename << "out_sin" << i << ".dat";
+                outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
+                filename.str("");
+                filename << "out_gene_sin" << i << ".dat";
+                outGeneralSinData(filename.str().c_str(), neurons);
+            }
+
             // ファイルに出力
             ofs_err  << i << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
             cout << sigError << ", " << 36 * sigError << ", " << geneError << endl;
