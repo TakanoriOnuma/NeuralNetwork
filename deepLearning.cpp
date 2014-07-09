@@ -18,7 +18,7 @@ const double ErrorEv   = 0.03;
 const double Rlow      = -1.0;
 const double Rhigh     = 1.0;
 const double OmegaLow  = PAI;
-const double OmegaHigh = 3 * PAI;
+const double OmegaHigh = 4 * PAI;
 
 inline double fout(double x)
 {
@@ -186,7 +186,7 @@ double calcSignalError(vector<vector<Neuron*>>& neurons, const vector<double> in
         forwardPropagation(neurons, inp_dats[i]);
 
         for(int j = 0; j < out_neurons.size(); j++) {
-            error += sqrt(pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0));
+            error += pow(tsignal[i][j] - out_neurons[j]->getX(), 2.0);
         }
     }
     error *= 0.5;
@@ -211,7 +211,7 @@ double calcGeneralError(vector<vector<Neuron*>>& neurons)
             forwardPropagation(neurons, inp_dats);
 
             for(int i = 0; i < out_neurons.size(); i++) {
-                error += sqrt(pow(inp_dats[i] - out_neurons[i]->getX(), 2.0));
+                error += pow(inp_dats[i] - out_neurons[i]->getX(), 2.0);
             }
         }
     }
@@ -366,11 +366,11 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを5層でN+1-7-3-7-N+1にする
+    // ニューロンを5層でN+1-7-2-7-N+1にする
     neurons.resize(5);
     neurons[0].resize(N + 1);
     neurons[1].resize(7);
-    neurons[2].resize(3);
+    neurons[2].resize(2);
     neurons[3].resize(7);
     neurons[4].resize(N + 1);
 
