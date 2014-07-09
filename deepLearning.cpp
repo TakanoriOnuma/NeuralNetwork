@@ -8,15 +8,17 @@
 using namespace std;
 
 
-const int    N        = 16;         // sin波のプロットする個数
-const int    NUM_STEP = 1;      // 1回のループで学習させる回数
-const int    Patterns = 30;
-const double Eta      = 0.03;
-const double Alpha    = 0.8;
-const double PAI      = 3.14159265359;
-const double ErrorEv  = 0.03;
-const double Rlow     = -1.0;
-const double Rhigh    = 1.0;
+const int    N         = 16;         // sin波のプロットする個数
+const int    NUM_STEP  = 1;      // 1回のループで学習させる回数
+const int    Patterns  = 50;
+const double Eta       = 0.03;
+const double Alpha     = 0.8;
+const double PAI       = 3.14159265359;
+const double ErrorEv   = 0.03;
+const double Rlow      = -1.0;
+const double Rhigh     = 1.0;
+const double OmegaLow  = PAI;
+const double OmegaHigh = 3 * PAI;
 
 inline double fout(double x)
 {
@@ -200,7 +202,7 @@ double calcGeneralError(vector<vector<Neuron*>>& neurons)
 
     // グラフで使う値を使って汎用誤差を集計する
     for(double A = 0.1; A <= 0.8; A += 0.02) {
-        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.1) {
+        for(double Omega = OmegaLow; Omega <= OmegaHigh; Omega += 0.1) {
             for(int i = 0; i < N + 1; i++) {
                 double x = 2.0 * i / N - 1.0;
                 inp_dats[i] = A * sin(Omega * x);
@@ -246,7 +248,7 @@ void outMiddleData(const char* filename, vector<vector<Neuron*>>& neurons)
     ofs_middle << endl;
 
     // 中間層の出力を求める
-    for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.1) {
+    for(double Omega = OmegaLow; Omega <= OmegaHigh; Omega += 0.1) {
         ofs_middle << "# ω=" << Omega << endl;
         for(double A = 0.1; A <= 0.8; A += 0.02) {
             // 入力するsin波を作る
@@ -308,14 +310,14 @@ void outGeneralSinData(const char* filename, vector<vector<Neuron*>> neurons)
     ofstream ofs_sin(filename);
     ofs_sin << "# x" << "\t";
     for(double A = 0.1; A <= 0.8; A += 0.1) {
-        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.5) {
+        for(double Omega = OmegaLow; Omega <= OmegaHigh; Omega += 0.5) {
             ofs_sin << "A = " << A << ", Omega = " << Omega << "\t" << "output" << "\t";
         }
     }
     ofs_sin << endl;
 
     const int pattern_A = (0.8 - 0.1) / 0.1 + 1;
-    const int pattern_Omega = (2 * PAI - PAI) / 0.5 + 1;
+    const int pattern_Omega = (OmegaHigh - OmegaLow) / 0.5 + 1;
     // メモリの確保
     double** out_sin = new double* [2 * pattern_A * pattern_Omega];
     for(int i = 0; i < 2 * pattern_A * pattern_Omega; i++) {
@@ -325,7 +327,7 @@ void outGeneralSinData(const char* filename, vector<vector<Neuron*>> neurons)
     // 出力結果をメモリに保存する
     int idx = 0;       // 配列の添え字番号
     for(double A = 0.1; A <= 0.8; A += 0.1) {
-        for(double Omega = PAI; Omega <= 2 * PAI; Omega += 0.5) {
+        for(double Omega = OmegaLow; Omega <= OmegaHigh; Omega += 0.5) {
             vector<double> inp_dats(N + 1);
             for(int i = 0; i < N + 1; i++) {
                 double x = 2.0 * i / N - 1.0;
@@ -399,7 +401,7 @@ int main()
     ofs_tsignal << "# pattern\t" << "A\t" << "Omega\t" << endl;
     for(int i = 0; i < Patterns; i++) {
         double A = my_rand(0.1, 0.8, 2);
-        double Omega = my_rand(PAI, 2 * PAI, 2);
+        double Omega = my_rand(OmegaLow, OmegaHigh, 2);
         for(int j = 0; j < N + 1; j++) {
             double inp_data = 2.0 * j / N - 1.0;
             double sin_data = A * sin(Omega * inp_data);
