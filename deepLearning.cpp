@@ -5,20 +5,24 @@
 #include <fstream>
 #include <sstream>
 
+#define DEEP_LEARNING 1         // 深層学習を行うか（学習を相当やるか）
+
 using namespace std;
 
 
-const int    N         = 16;         // sin波のプロットする個数
-const int    NUM_STEP  = 1;      // 1回のループで学習させる回数
-const int    Patterns  = 50;
-const double Eta       = 0.03;
-const double Alpha     = 0.8;
-const double PAI       = 3.14159265359;
-const double ErrorEv   = 0.03;
-const double Rlow      = -1.0;
-const double Rhigh     = 1.0;
-const double OmegaLow  = PAI;
-const double OmegaHigh = 4 * PAI;
+const int    N             = 16;        // sin波のプロットする個数
+const int    NUM_STEP      = 100;       // 学習させる回数
+const int    DEEP_STEP     = 1000;   // 深層学習で1ステップで学習させる回数
+const int    DEEP_NUM_STEP = 1000;     // 深層学習で学習させる回数
+const int    Patterns      = 50;
+const double Eta           = 0.01;
+const double Alpha         = 0.8;
+const double PAI           = 3.14159265359;
+const double ErrorEv       = 0.01;
+const double Rlow          = -1.0;
+const double Rhigh         = 1.0;
+const double OmegaLow      = PAI;
+const double OmegaHigh     = 4 * PAI;
 
 inline double fout(double x)
 {
@@ -366,11 +370,11 @@ int main()
 
     vector<vector<Neuron*>> neurons(0, vector<Neuron*>(0));
 
-    // ニューロンを5層でN+1-7-2-7-N+1にする
+    // ニューロンを5層でN+1-7-3-7-N+1にする
     neurons.resize(5);
     neurons[0].resize(N + 1);
     neurons[1].resize(7);
-    neurons[2].resize(2);
+    neurons[2].resize(3);
     neurons[3].resize(7);
     neurons[4].resize(N + 1);
 
@@ -427,24 +431,25 @@ int main()
     // 学習をする
     double sigError = calcSignalError(neurons, inp_dats, tsignal, Patterns);
     double geneError = calcGeneralError(neurons);
-    for(int i = 0; sigError > ErrorEv && i < 100; ) {
-        for(int j = 0; j < 10; i++, j++) {
-            if(i < 10) {
+    int step = 0;
+    for( ; sigError > ErrorEv && step < NUM_STEP; ) {
+        for(int j = 0; j < 10; step++, j++) {
+            if(step < 10) {
                 stringstream filename;
-                filename << "out_middle" << i << ".dat";
+                filename << "out_middle" << step << ".dat";
                 outMiddleData(filename.str().c_str(), neurons);
                 filename.str("");
-                filename << "out_sin" << i << ".dat";
+                filename << "out_sin" << step << ".dat";
                 outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
                 filename.str("");
-                filename << "out_gene_sin" << i << ".dat";
+                filename << "out_gene_sin" << step << ".dat";
                 outGeneralSinData(filename.str().c_str(), neurons);
             }
 
             // ファイルに出力
-            ofs_err  << i << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
-            cout << sigError << ", " << 36 * sigError << ", " << geneError << endl;
-            ofs_w << i << "\t";
+            ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+            cout << step << ", " << sigError << ", " << 36 * sigError << ", " << geneError << endl;
+            ofs_w << step << "\t";
             for(int ii = 1; ii < neurons.size(); ii++) {
                 for(int j = 0; j < neurons[ii].size(); j++) {
                     const vector<double>& w = neurons[ii][j]->getW();
@@ -455,7 +460,118 @@ int main()
             }
             ofs_w << endl;
 
-            for(int step = 0; step < NUM_STEP; step++) {
+            for(int j = 0; j < Patterns; j++) {
+                forwardPropagation(neurons, inp_dats[j]);
+                backPropagation(neurons, tsignal[j]);
+            }
+
+            sigError  = calcSignalError(neurons, inp_dats, tsignal, Patterns);
+            geneError = calcGeneralError(neurons);
+        }
+        stringstream filename;
+        filename << "out_middle" << step << ".dat";
+        outMiddleData(filename.str().c_str(), neurons);
+        filename.str("");
+        filename << "out_sin" << step << ".dat";
+        outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
+        filename.str("");
+        filename << "out_gene_sin" << step << ".dat";
+        outGeneralSinData(filename.str().c_str(), neurons);
+    }
+    ofs_err.close();
+    ofs_w.close();
+
+// 深層学習
+#if DEEP_LEARNING == 1
+    // 深層学習用にファイルを作り直す
+    ofs_err.open("error_deep.dat");
+    ofs_err << "# " << "step\t" << "signal-error\t" << "estimate-error\t" << "general-error" << endl;
+    ofs_w.open("out_w_deep.dat");
+    ofs_w << "# " << "step\t";
+    for(int i = 1; i < neurons.size(); i++) {
+        for(int j = 0; j < neurons[i].size(); j++) {
+            const vector<double>& w = neurons[i][j]->getW();
+            for(int k = 0; k < w.size(); k++) {
+                ofs_w << "neurons[" << i << "][" << j << "]->w[" << k << "]\t";
+            }
+        }
+    }
+    ofs_w << endl;
+
+    // 最初の1step分を学習する
+    for(int i = 0; i < DEEP_STEP - NUM_STEP; i++) {
+        for(int j = 0; j < Patterns; j++) {
+            forwardPropagation(neurons, inp_dats[j]);
+            backPropagation(neurons, tsignal[j]);
+        }
+    }
+    step = 1;
+    sigError = calcSignalError(neurons, inp_dats, tsignal, Patterns);
+    geneError = calcGeneralError(neurons);
+    // 10stepまでやる
+    for( ; step < 10; step++) {
+        stringstream filename;
+        filename << "out_middle_deep" << step << ".dat";
+        outMiddleData(filename.str().c_str(), neurons);
+        filename.str("");
+        filename << "out_sin_deep" << step << ".dat";
+        outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
+        filename.str("");
+        filename << "out_gene_sin_deep" << step << ".dat";
+        outGeneralSinData(filename.str().c_str(), neurons);
+        // ファイルに出力
+        ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+        cout << step << ", " << sigError << ", " << 36 * sigError << ", " << geneError << endl;
+        ofs_w << step << "\t";
+        for(int ii = 1; ii < neurons.size(); ii++) {
+            for(int j = 0; j < neurons[ii].size(); j++) {
+                const vector<double>& w = neurons[ii][j]->getW();
+                for(int k = 0; k < w.size(); k++) {
+                    ofs_w << w[k] << "\t";
+                }
+            }
+        }
+        ofs_w << endl;
+
+        for(int i = 0; i < DEEP_STEP; i++) {
+            for(int j = 0; j < Patterns; j++) {
+                forwardPropagation(neurons, inp_dats[j]);
+                backPropagation(neurons, tsignal[j]);
+            }
+        }
+
+        sigError  = calcSignalError(neurons, inp_dats, tsignal, Patterns);
+        geneError = calcGeneralError(neurons);
+    }
+    stringstream filename;
+    filename << "out_middle_deep" << step << ".dat";
+    outMiddleData(filename.str().c_str(), neurons);
+    filename.str("");
+    filename << "out_sin_deep" << step << ".dat";
+    outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
+    filename.str("");
+    filename << "out_gene_sin_deep" << step << ".dat";
+    outGeneralSinData(filename.str().c_str(), neurons);
+
+    for( ; sigError > ErrorEv && step < DEEP_NUM_STEP; ) {
+        for(int j = 0; j < 10; step++, j++) {
+
+
+            // ファイルに出力
+            ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+            cout << step << ", " << sigError << ", " << 36 * sigError << ", " << geneError << endl;
+            ofs_w << step << "\t";
+            for(int ii = 1; ii < neurons.size(); ii++) {
+                for(int j = 0; j < neurons[ii].size(); j++) {
+                    const vector<double>& w = neurons[ii][j]->getW();
+                    for(int k = 0; k < w.size(); k++) {
+                        ofs_w << w[k] << "\t";
+                    }
+                }
+            }
+            ofs_w << endl;
+
+            for(int i = 0; i < DEEP_STEP; i++) {
                 for(int j = 0; j < Patterns; j++) {
                     forwardPropagation(neurons, inp_dats[j]);
                     backPropagation(neurons, tsignal[j]);
@@ -466,15 +582,16 @@ int main()
             geneError = calcGeneralError(neurons);
         }
         stringstream filename;
-        filename << "out_middle" << i << ".dat";
+        filename << "out_middle_deep" << step << ".dat";
         outMiddleData(filename.str().c_str(), neurons);
         filename.str("");
-        filename << "out_sin" << i << ".dat";
+        filename << "out_sin_deep" << step << ".dat";
         outLearningSinData(filename.str().c_str(), neurons, inp_dats, tsignal);
         filename.str("");
-        filename << "out_gene_sin" << i << ".dat";
+        filename << "out_gene_sin_deep" << step << ".dat";
         outGeneralSinData(filename.str().c_str(), neurons);
     }
+#endif
 
 
     // ニューロンの削除（動的に確保したため）
