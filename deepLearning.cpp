@@ -15,7 +15,7 @@ const int    NUM_STEP      = 100;       // 学習させる回数
 const int    DEEP_STEP     = 1000;   // 深層学習で1ステップで学習させる回数
 const int    DEEP_NUM_STEP = 1000;     // 深層学習で学習させる回数
 const int    Patterns      = 50;
-const double Eta           = 0.01;
+const double ETA           = 0.01;
 const double Alpha         = 0.8;
 const double PAI           = 3.14159265359;
 const double ErrorEv       = 0.01;
@@ -23,6 +23,8 @@ const double Rlow          = -1.0;
 const double Rhigh         = 1.0;
 const double OmegaLow      = PAI;
 const double OmegaHigh     = 4 * PAI;
+
+double Eta = ETA;
 
 inline double fout(double x)
 {
@@ -485,7 +487,7 @@ int main()
 #if DEEP_LEARNING == 1
     // 深層学習用にファイルを作り直す
     ofs_err.open("error_deep.dat");
-    ofs_err << "# " << "step\t" << "signal-error\t" << "estimate-error\t" << "general-error" << endl;
+    ofs_err << "# " << "step\t" << "signal-error\t" << "estimate-error\t" << "general-error\t" << "Eta" << endl;
     ofs_w.open("out_w_deep.dat");
     ofs_w << "# " << "step\t";
     for(int i = 1; i < neurons.size(); i++) {
@@ -498,6 +500,7 @@ int main()
     }
     ofs_w << endl;
 
+    Eta *= 0.5;     // Etaを半分に減らす
     // 最初の1step分を学習する
     for(int i = 0; i < DEEP_STEP - NUM_STEP; i++) {
         for(int j = 0; j < Patterns; j++) {
@@ -520,7 +523,7 @@ int main()
         filename << "out_gene_sin_deep" << step << ".dat";
         outGeneralSinData(filename.str().c_str(), neurons);
         // ファイルに出力
-        ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+        ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << "\t" << Eta << endl;
         cout << step << ", " << sigError << ", " << 36 * sigError << ", " << geneError << endl;
         ofs_w << step << "\t";
         for(int ii = 1; ii < neurons.size(); ii++) {
@@ -533,6 +536,7 @@ int main()
         }
         ofs_w << endl;
 
+        Eta *= 0.99;    // Etaを少しずつ減らしていく
         for(int i = 0; i < DEEP_STEP; i++) {
             for(int j = 0; j < Patterns; j++) {
                 forwardPropagation(neurons, inp_dats[j]);
@@ -555,10 +559,10 @@ int main()
 
     for( ; sigError > ErrorEv && step < DEEP_NUM_STEP; ) {
         for(int j = 0; j < 10; step++, j++) {
-
+            Eta *= 0.99;    // Etaを少しずつ減らしていく
 
             // ファイルに出力
-            ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << endl;
+            ofs_err  << step << "\t" << sigError << "\t" << 36 * sigError << "\t" << geneError << "\t" << Eta << endl;
             cout << step << ", " << sigError << ", " << 36 * sigError << ", " << geneError << endl;
             ofs_w << step << "\t";
             for(int ii = 1; ii < neurons.size(); ii++) {
